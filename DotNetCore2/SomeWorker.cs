@@ -11,13 +11,13 @@ namespace DotNetCore2
             _logger = logger;
         }
 
-        public Task DoSomeWorkAsync()
+        public async Task DoSomeWorkAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Doing some work...");
-            Thread.Sleep(5000);
-            _logger.LogInformation("Finishing some work...");
 
-            return Task.CompletedTask;
+            await Task.Delay(5000, cancellationToken);
+
+            _logger.LogInformation("Finishing some work...");
         }
     }
 }

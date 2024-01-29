@@ -3,20 +3,20 @@ using Microsoft.Extensions.Logging;
 
 namespace DotNetCore2
 {
-    public class BackgroundHostedService : BackgroundService
+    public class LongRunningHostedService : IHostedService
     {
-        private readonly ILogger<BackgroundHostedService> _logger;
+        private readonly ILogger<LongRunningHostedService> _logger;
         private readonly SomeWorker _worker;
 
-        public BackgroundHostedService(
-            ILogger<BackgroundHostedService> logger,
+        public LongRunningHostedService(
+            ILogger<LongRunningHostedService> logger,
             SomeWorker someWorker)
         {
             _logger = logger;
             _worker = someWorker;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(3));
 
@@ -34,14 +34,11 @@ namespace DotNetCore2
             }
         }
 
-        public override Task StopAsync(CancellationToken cancellationToken)
+        public Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogWarning("Service is stopped");
 
-            var timerStartTime = DateTime.UtcNow;
-            cancellationToken.Register(() => Console.WriteLine(DateTime.UtcNow.Subtract(timerStartTime).TotalMilliseconds));
-
-            return base.StopAsync(cancellationToken);
+            return Task.CompletedTask;
         }
     }
 }
