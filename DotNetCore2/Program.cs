@@ -16,6 +16,8 @@ switch(runningType)
                 {
                     services.AddTransient<SomeWorker>();
                     services.AddHostedService<BackgroundHostedService>();
+
+                    //services.Configure<HostOptions>(opts => opts.ShutdownTimeout = TimeSpan.FromSeconds(1));
                 })
                 .Build();
 

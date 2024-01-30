@@ -18,14 +18,18 @@ namespace DotNetCore2
 
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
+            var shouldUseToken = true;
+            var actualCancelationToken = shouldUseToken
+                ? cancellationToken
+                : new CancellationTokenSource().Token;
             using PeriodicTimer timer = new(TimeSpan.FromSeconds(3));
 
             _logger.LogInformation("Start action is running...");
             try
             {
-                while (await timer.WaitForNextTickAsync(cancellationToken))
+                while (await timer.WaitForNextTickAsync(actualCancelationToken))
                 {
-                    await _worker.DoSomeWorkAsync(cancellationToken);
+                    await _worker.DoSomeWorkAsync(actualCancelationToken);
                 }
             }
             catch (OperationCanceledException)
@@ -38,10 +42,11 @@ namespace DotNetCore2
         {
             _logger.LogWarning("Service is stopped");
 
-            var timerStartTime = DateTime.UtcNow;
-            cancellationToken.Register(() => Console.WriteLine(DateTime.UtcNow.Subtract(timerStartTime).TotalMilliseconds));
+            cancellationToken.Register(() => _logger.LogCritical("StopAsync token is cancelled"));
 
             return base.StopAsync(cancellationToken);
         }
     }
 }
+
+// https://stackoverflow.com/questions/61094552/why-is-iscancellationrequested-not-set-to-true-on-stopping-a-backgroundservice-i
